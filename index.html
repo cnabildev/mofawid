@@ -1,11 +1,171 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>حساب نسبة المفوض القضائي</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        direction: rtl;
+        text-align: right;
+        background-color: #f9f9f9;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        background-color: #fff;
+        padding: 20px;
+        margin: 0 auto;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+      input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .result {
+        margin-top: 20px;
+        padding: 20px;
+        background-color: #f1f1f1;
+        border-radius: 5px;
+        border: 2px solid #007bff; /* إضافة حد لتمييز النتيجة */
+      }
+      .result p {
+        color: #d9534f; /* لون مميز للناتج */
+        font-size: 1.2em; /* تكبير حجم النص */
+        font-weight: bold; /* جعل النص عريض */
+      }
+      .note {
+        color: red;
+        font-weight: bold;
+      }
+      .details-list {
+        list-style-type: none;
+        padding: 0;
+      }
+      .details-list li {
+        margin-bottom: 10px;
+        background-color: #e9ecef;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .details-list .header {
+        font-weight: bold;
+        background-color: #007bff;
+        color: #fff;
+      }
+    </style>
   </head>
   <body>
-    HTML
+    <div class="container">
+      <h2>حاسبة نسبة المفوض القضائي</h2>
+      <label for="amount">أدخل المبلغ (بالدرهم):</label>
+      <input type="number" id="amount" placeholder="أدخل المبلغ" />
+
+      <button onclick="calculate()">احسب نسبة المفوض القضائي</button>
+
+      <div class="result" id="result"></div>
+    </div>
+
+    <script>
+      function calculate() {
+        let amount = parseFloat(document.getElementById("amount").value);
+        let resultDiv = document.getElementById("result");
+        let fixedFee = 150;
+        let commission = 0;
+        let vatRate = 0.2;
+        let vat = 0;
+        let details = "";
+        let exceedsMax = false;
+        let detailsList = "<ul class='details-list'>";
+
+        detailsList +=
+          "<li class='header'>تفاصيل حساب نسبة المفوض القضائي:</li>";
+
+        // الأجر الثابت
+        detailsList += `<li>الأجر الثابت: ${fixedFee} درهم.</li>`;
+
+        // حساب النسبة حسب الأشطر
+        if (amount <= 3000) {
+          commission = fixedFee;
+          detailsList +=
+            "<li>لأن المبلغ أقل من أو يساوي 3000 درهم، تم إضافة الأجر الثابت فقط: 150 درهم.</li>";
+        } else if (amount <= 6000) {
+          commission = fixedFee + (amount - 3000) * 0.04;
+          detailsList += `<li>نسبة 4% على المبلغ بين 3001 و6000 درهم: ${
+            (amount - 3000) * 0.04
+          } درهم.</li>`;
+        } else if (amount <= 20000) {
+          commission = fixedFee + 3000 * 0.04 + (amount - 6000) * 0.03;
+          detailsList += `<li>نسبة 4% على المبلغ بين 3001 و6000 درهم: ${(
+            3000 * 0.04
+          ).toFixed(2)} درهم.</li>`;
+          detailsList += `<li>نسبة 3% على المبلغ بين 6001 و${amount} درهم: ${(
+            (amount - 6000) *
+            0.03
+          ).toFixed(2)} درهم.</li>`;
+        } else {
+          commission =
+            fixedFee + 3000 * 0.04 + 14000 * 0.03 + (amount - 20000) * 0.02;
+          detailsList += `<li>نسبة 4% على المبلغ بين 3001 و6000 درهم: ${(
+            3000 * 0.04
+          ).toFixed(2)} درهم.</li>`;
+          detailsList += `<li>نسبة 3% على المبلغ بين 6001 و20000 درهم: ${(
+            14000 * 0.03
+          ).toFixed(2)} درهم.</li>`;
+          detailsList += `<li>نسبة 2% على المبلغ الذي يتجاوز 20000 درهم: ${(
+            (amount - 20000) *
+            0.02
+          ).toFixed(2)} درهم.</li>`;
+
+          // رفع الشطر الأخير إلى 800 درهم إن كان أقل
+          let additionalFee = (amount - 20000) * 0.02;
+          if (additionalFee < 800) {
+            commission = fixedFee + 3000 * 0.04 + 14000 * 0.03 + 800;
+            detailsList += "<li>تم رفع الشطر الأخير إلى 800 درهم.</li>";
+          }
+
+          // التأكد إذا كان المبلغ يتجاوز 10000 درهم
+          if (commission > 10000) {
+            commission = 10000;
+            exceedsMax = true;
+            detailsList +=
+              "<li class='note'>المبلغ يتجاوز 10000 درهم وهو أقصى ما يمكن استفاؤه.</li>";
+          }
+        }
+
+        // حساب الضريبة على القيمة المضافة
+        vat = commission * vatRate;
+        let total = commission + vat;
+
+        // عرض النتيجة النهائية
+        resultDiv.innerHTML = `<p><strong>نسبة المفوض القضائي: ${commission.toFixed(
+          2
+        )} درهم</strong></p>`;
+        resultDiv.innerHTML += `<p><strong>ضريبة القيمة المضافة (20%): ${vat.toFixed(
+          2
+        )} درهم</strong></p>`;
+        resultDiv.innerHTML += `<p style="color: #d9534f; font-size: 1.5em; font-weight: bold;">الإجمالي: ${total.toFixed(
+          2
+        )} درهم</p>`;
+        resultDiv.innerHTML += detailsList + "</ul>";
+      }
+    </script>
   </body>
 </html>
